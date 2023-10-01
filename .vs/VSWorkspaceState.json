@@ -1,0 +1,17 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\.github",
+    "\\.github\\workflows",
+    "\\companions",
+    "\\public",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\sign-in",
+    "\\src\\app\\sign-in\\[[...sign-in]]",
+    "\\src\\app\\sign-up",
+    "\\src\\app\\sign-up\\[[...sign-up]]"
+  ],
+  "SelectedNode": "\\src\\scripts\\exportToCharacter.mjs",
+  "PreviewInSolutionExplorer": false
+}

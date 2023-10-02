@@ -38,6 +38,7 @@ class MemoryManager {
         apiKey: process.env.PINECONE_API_KEY!,
         environment: process.env.PINECONE_ENVIRONMENT!,
       });
+      // Add initialization logic here if the database is empty
     }
   }
 
@@ -45,6 +46,7 @@ class MemoryManager {
     recentChatHistory: string,
     companionFileName: string
   ) {
+    let similarDocs;
     if (process.env.VECTOR_DB === "pinecone") {
       console.log("INFO: using Pinecone for vector search.");
       const pineconeClient = <PineconeClient>this.vectorDBClient;
@@ -58,12 +60,11 @@ class MemoryManager {
         { pineconeIndex }
       );
 
-      const similarDocs = await vectorStore
+      similarDocs = await vectorStore
         .similaritySearch(recentChatHistory, 3, { fileName: companionFileName })
         .catch((err) => {
           console.log("WARNING: failed to get vector search results.", err);
         });
-      return similarDocs;
     } else {
       console.log("INFO: using Supabase for vector search.");
       const supabaseClient = <SupabaseClient>this.vectorDBClient;
@@ -75,13 +76,20 @@ class MemoryManager {
           queryName: "match_documents",
         }
       );
-      const similarDocs = await vectorStore
+      similarDocs = await vectorStore
         .similaritySearch(recentChatHistory, 3)
         .catch((err) => {
           console.log("WARNING: failed to get vector search results.", err);
         });
-      return similarDocs;
     }
+
+    // Handle empty database
+    if (!similarDocs || similarDocs.length === 0) {
+      console.log("INFO: No similar documents found in the database.");
+      return [];
+    }
+
+    return similarDocs;
   }
 
   public static async getInstance(): Promise<MemoryManager> {
@@ -121,6 +129,12 @@ class MemoryManager {
     let result = await this.history.zrange(key, 0, Date.now(), {
       byScore: true,
     });
+
+    // Handle empty database
+    if (!result || result.length === 0) {
+      console.log("INFO: No chat history found.");
+      return "";
+    }
 
     result = result.slice(-30).reverse();
     const recentChats = result.reverse().join("\n");

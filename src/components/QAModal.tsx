@@ -1,23 +1,14 @@
-"use client";
-
-import {Fragment, useEffect, useState} from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useCompletion } from "ai/react";
-import {ChatBlock, responseToChatBlocks} from "@/components/ChatBlock";
-
-var last_name = "";
+import { ChatBlock, responseToChatBlocks } from "@/components/ChatBlock";
 
 export default function QAModal({
   open,
   setOpen,
   example,
-}: {
-  open: boolean;
-  setOpen: any;
-  example: any;
 }) {
   if (!example) {
-    // create a dummy so the completion doesn't croak during init.
     example = new Object();
     example.llm = "";
     example.name = "";
@@ -37,21 +28,18 @@ export default function QAModal({
     headers: { name: example.name },
   });
 
-  let [blocks, setBlocks] = useState<any[] | null>(null)
+  const [conversation, setConversation] = useState([]);
 
   useEffect(() => {
-    // When the completion changes, parse it to multimodal blocks for display.
     if (completion) {
-      setBlocks(responseToChatBlocks(completion))
-    } else {
-      setBlocks(null)
+      setConversation(prevConversation => [
+        ...prevConversation,
+        { type: 'user', text: input },
+        { type: 'response', blocks: responseToChatBlocks(completion) }
+      ]);
+      setInput("");
     }
-  }, [completion])
-
-  if (!example) {
-    console.log("ERROR: no companion selected");
-    return null;
-  }
+  }, [completion]);
 
   const handleClose = () => {
     setInput("");
@@ -94,7 +82,7 @@ export default function QAModal({
                       className={"w-full flex-auto rounded-md border-0 bg-white/5 px-3.5 py-2 shadow-sm focus:outline-none sm:text-sm sm:leading-6 " + (isLoading && !completion ? "text-gray-600 cursor-not-allowed" : "text-white")}                      
                       value={input}
                       onChange={handleInputChange}
-                      disabled={isLoading && !blocks}
+                      disabled={isLoading && !completion}
                     />
                   </form>
                   <div className="mt-3 sm:mt-5">
@@ -103,13 +91,12 @@ export default function QAModal({
                         Chat with {example.name}
                       </p>
                     </div>
-                    {blocks && (
-                      <div className="mt-2">
-                        {blocks}
+                    {conversation.map((item, index) => (
+                      <div key={index} className={item.type === 'user' ? 'text-left' : 'text-right'}>
+                        {item.type === 'user' ? item.text : item.blocks}
                       </div>
-                    )}
-
-                    {isLoading && !blocks && (
+                    ))}
+                    {isLoading && !completion && (
                       <p className="flex items-center justify-center mt-4">
                         <svg
                           className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

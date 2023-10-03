@@ -1,10 +1,9 @@
 [
   {
-    "name": "Alex",
-    "title": "I love talking about books and games",
-    "imageUrl": "/alex.png",
+    "name": "Taylor",
+    "title": "Passionate about math and chess",
+    "imageUrl": "/taylor.png",
     "llm": "chatgpt",
     "phone": "OPTIONAL_COMPANION_PHONE_NUMBER"
   }
-
 ]
